@@ -35,12 +35,6 @@ void win_main_show(void) {
   window_stack_push(window, false);
 }
 
-void win_main_cleanup(void) {
-  window_destroy(window);
-}
-
-//
-
 static void window_load(Window* window) {
   menu_layer = menu_layer_create_fullscreen(window);
   menu_layer_set_click_config_onto_window(menu_layer, window);
@@ -83,7 +77,13 @@ static void menu_draw_row(GContext* ctx, const Layer* cell_layer, MenuIndex* cel
 }
 
 static void menu_draw_row_timers(GContext* ctx, const Layer* cell_layer, uint16_t row_index) {
-
+  char time_left[10];
+  snprintf(time_left, 16, "%d:%d", time_left / 60, time_left % 60);
+  graphics_draw_text(ctx, time_left,
+    fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD),
+    GRect(33, 3, PEBBLE_WIDTH - 33, 24), GTextOverflowModeFill,
+    GTextAlignmentLeft, NULL);
+  
 }
 
 static void menu_draw_row_other(GContext* ctx, const Layer* cell_layer, uint16_t row_index) {
@@ -106,9 +106,13 @@ static void menu_select(struct MenuLayer* menu_layer, MenuIndex* cell_index, voi
 }
 
 static void menu_select_timers(uint16_t row_index) {
-
+  
 }
 
 static void menu_select_other(uint16_t row_index) {
-
+  switch (row_index) {
+    case MENU_ROW_OTHER_ADD:
+      win_timer_add_show();
+    break;
+  }
 }

@@ -20,5 +20,4 @@ static void init(void) {
 }
 
 static void deinit(void) {
-
 }
