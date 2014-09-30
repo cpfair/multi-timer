@@ -1,6 +1,6 @@
 /*
 
-Pebble Tests
+Pebble Tests v0.1.0
 A Pebble library for doing unit tests.
 http://smallstoneapps.github.io/pebble-tests/
 
@@ -30,11 +30,11 @@ THE SOFTWARE.
 
 --------------------
 
-tests/unit.h
+unit.h
 
-This file is based on minunit.h, which was found here on
-http://www.jera.com/techinfo/jtns/jtn002.html as has been modified for my
-purposes.
+This file is based on minunit.h, which was found here
+http://www.jera.com/techinfo/jtns/jtn002.html
+and has been modified for my purposes.
 
 */
 
@@ -43,6 +43,13 @@ purposes.
     return message; \
   } \
 } while (0)
+
+#define mu_run_test_group(group) do { \
+  char* message = group(); \
+  if (message) { \
+    return message; \
+  } \
+} while(0)
 
 #define mu_run_test(test) do { \
   before_each(); \
@@ -57,3 +64,7 @@ purposes.
 
 extern int tests_run;
 extern int tests_passed;
+
+void none(void);
+void before_each(void);
+void after_each(void);

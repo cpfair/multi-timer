@@ -66,20 +66,11 @@ def build(ctx):
   ctx.load('pebble_sdk')
 
   js_libs = [
-    # '../src/js/src/libs/firebase.js',
-    '../src/js/src/libs/socket.io.min.js',
-    '../src/js/src/libs/http.js',
-    '../src/js/src/libs/version.js',
-    '../src/js/src/libs/pebble-ga.js',
-    '../src/js/src/libs/keen.js',
-    '../src/js/src/libs/js-message-queue.min.js',
   ]
 
   js_sources = [
     '../src/js/src/generated/appinfo.js',
     '../src/js/src/main.js',
-    '../src/js/src/timer.js',
-    '../src/js/src/timers.js'
   ]
   built_js = '../src/js/pebble-js-app.js'
 
