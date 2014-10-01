@@ -72,6 +72,11 @@ var AppInfo = {
         "type": "png",
         "name": "MENU_ICON",
         "file": "images/menu.png"
+      },
+      {
+        "type": "png",
+        "name": "ICONS_16",
+        "file": "images/icons.png"
       }
     ]
   }

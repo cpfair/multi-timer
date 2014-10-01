@@ -54,3 +54,6 @@ test:
 	@rm tests/run
 	@printf "\x1B[0m"
 	@printf "\n"
+
+lint:
+	oclint src/windows/win-main.c -- -c -std=c11 -I tests/include/ -I tests/ -I src/libs/pebble-assist/
