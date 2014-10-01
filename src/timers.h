@@ -1,6 +1,8 @@
 #include <pebble.h>
 #include "timer.h"
 
+typedef void (*TimersUpdatedHandler)(void);
+
 // Setup the timers module and its associated data objects.
 // Must be called before all other operations.
 void timers_init(void);
@@ -25,3 +27,6 @@ bool timers_add(Timer* timer);
 // Returns true if successful, false otherwise (usually because there was
 // no timer at that position).
 bool timers_remove(uint16_t position);
+
+void timers_mark_updated(void);
+void timers_register_update_handler(TimersUpdatedHandler handler);

@@ -27,6 +27,7 @@ typedef struct Timer {
   TimerVibration vibration;
   uint8_t repeat;
   uint8_t repeat_count;
+  AppTimer* timer;
 } Timer;
 
 void timer_time_str(Timer* timer, bool showHours, char* str, int str_len);

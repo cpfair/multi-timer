@@ -116,6 +116,7 @@ GBitmap* bitmaps_get_sub_bitmap(uint32_t res_id, GRect rect) {
       return NULL;
     }
   }
+  APP_LOG(APP_LOG_LEVEL_DEBUG, "Creating new sub!");
   AppBitmap* app_bmp = malloc(sizeof(AppBitmap));
   app_bmp->res_id = res_id;
   app_bmp->bitmap = gbitmap_create_as_sub_bitmap(parent, rect);

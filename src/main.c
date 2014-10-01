@@ -30,7 +30,7 @@ static void create_fake_timers(void) {
   timer->id = 1;
   timer->type = TIMER_TYPE_TIMER;
   timer->length = timer->current_time = 10 * 60;
-  timer->status = TIMER_STATUS_RUNNING;
+  timer->status = TIMER_STATUS_STOPPED;
   timer->repeat = 1;
   timer->repeat_count = 0;
   timer->vibration = TIMER_VIBE_SINGLE;
@@ -39,7 +39,7 @@ static void create_fake_timers(void) {
   Timer* stopwatch = malloc(sizeof(Timer));
   stopwatch->id = 2;
   stopwatch->type = TIMER_TYPE_STOPWATCH;
-  stopwatch->status = TIMER_STATUS_PAUSED;
+  stopwatch->status = TIMER_STATUS_STOPPED;
   stopwatch->current_time = 0;
   timers_add(stopwatch);
 }
