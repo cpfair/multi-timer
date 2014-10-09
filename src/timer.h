@@ -28,6 +28,8 @@ typedef struct Timer {
   uint8_t repeat;
   uint8_t repeat_count;
   AppTimer* timer;
+  WakeupID wakeup_id;
+  char label[24];
 } Timer;
 
 void timer_time_str(Timer* timer, bool showHours, char* str, int str_len);

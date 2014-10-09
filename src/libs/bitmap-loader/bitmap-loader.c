@@ -42,7 +42,7 @@ typedef struct {
   uint32_t res_id;
   GBitmap* bitmap;
   uint8_t group;
-  GRect rect;
+  GRect* rect;
   bool is_sub;
 } AppBitmap;
 
@@ -58,6 +58,9 @@ void bitmaps_init() {
 }
 
 GBitmap* bitmaps_get_bitmap(uint32_t res_id) {
+  if (! bitmaps) {
+    return NULL;
+  }
   AppBitmap* app_bmp = get_app_bitmap_by_res_id(res_id);
   if (app_bmp == NULL) {
     app_bmp = malloc(sizeof(AppBitmap));
@@ -71,6 +74,9 @@ GBitmap* bitmaps_get_bitmap(uint32_t res_id) {
 }
 
 GBitmap* bitmaps_get_bitmap_in_group(uint32_t res_id, uint8_t group) {
+  if (! bitmaps) {
+    return NULL;
+  }
   if (group <= 0) {
     return NULL;
   }
@@ -90,18 +96,20 @@ GBitmap* bitmaps_get_bitmap_in_group(uint32_t res_id, uint8_t group) {
       app_bmp->bitmap = gbitmap_create_with_resource(app_bmp->res_id);
     }
   }
-  APP_LOG(APP_LOG_LEVEL_DEBUG, "%d", linked_list_count(bitmaps));
   return app_bmp->bitmap;
 }
 
 GBitmap* bitmaps_get_sub_bitmap(uint32_t res_id, GRect rect) {
+  if (! bitmaps) {
+    return NULL;
+  }
   GBitmap* parent = NULL;
   uint8_t count = linked_list_count(bitmaps);
   for (uint8_t b = 0; b < count; b += 1) {
     AppBitmap* bmp = (AppBitmap*)linked_list_get(bitmaps, b);
     if (bmp->res_id == res_id) {
       if (bmp->is_sub) {
-        if (grect_equal(&bmp->rect, &rect)) {
+        if (grect_equal(bmp->rect, &rect)) {
           return bmp->bitmap;
         }
       }
@@ -116,11 +124,18 @@ GBitmap* bitmaps_get_sub_bitmap(uint32_t res_id, GRect rect) {
       return NULL;
     }
   }
-  APP_LOG(APP_LOG_LEVEL_DEBUG, "Creating new sub!");
   AppBitmap* app_bmp = malloc(sizeof(AppBitmap));
+  if (app_bmp == NULL) {
+    return NULL;
+  }
   app_bmp->res_id = res_id;
   app_bmp->bitmap = gbitmap_create_as_sub_bitmap(parent, rect);
-  app_bmp->rect = rect;
+  if (app_bmp->bitmap == NULL) {
+    return NULL;
+  }
+  app_bmp->rect = malloc(sizeof(GRect));
+  app_bmp->rect->origin = rect.origin;
+  app_bmp->rect->size = rect.size;
   app_bmp->is_sub = true;
   linked_list_append(bitmaps, app_bmp);
   return app_bmp->bitmap;

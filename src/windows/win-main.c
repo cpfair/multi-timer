@@ -3,18 +3,24 @@
 #include <bitmap-loader.h>
 #include "win-timer-add.h"
 #include "../timers.h"
+#include "../libs/strap/strap.h"
 
 #define MENU_SECTION_TIMERS  0
 #define MENU_SECTION_OTHER   1
-#define MENU_ROW_COUNT_OTHER 1
-#define MENU_ROW_OTHER_ADD   0
 
-#define ICON_RECT_PLAY      GRect( 0,  0, 16, 16)
-#define ICON_RECT_PAUSE     GRect(16,  0, 16, 16)
-#define ICON_RECT_STOP      GRect(32,  0, 16, 16)
-#define ICON_RECT_DONE      GRect(16, 16, 16, 16)
-#define ICON_RECT_TIMER     GRect( 0, 16,  8, 16)
-#define ICON_RECT_STOPWATCH GRect( 8, 16,  8, 16)
+#define MENU_ROW_COUNT_OTHER 2
+
+#define MENU_ROW_OTHER_ADD_TIMER     0
+#define MENU_ROW_OTHER_ADD_STOPWATCH 1
+
+GRect icon_rects[7];
+#define ICON_RECT_PLAY      0
+#define ICON_RECT_PAUSE     1
+#define ICON_RECT_STOP      2
+#define ICON_RECT_DONE      3
+#define ICON_RECT_TIMER     4
+#define ICON_RECT_STOPWATCH 5
+#define ICON_RECT_ADD       6
 
 static void window_load(Window* window);
 static void window_unload(Window* window);
@@ -30,12 +36,20 @@ static void menu_select_other(uint16_t row_index);
 
 static void timers_update_handler(void);
 
-static Window* window;
-static MenuLayer* menu;
+static Window*    s_window;
+static MenuLayer* s_menu;
 
 void win_main_init(void) {
-  window = window_create();
-  window_set_window_handlers(window, (WindowHandlers) {
+  icon_rects[ICON_RECT_PLAY] =      GRect( 0,  0, 16, 16);
+  icon_rects[ICON_RECT_PAUSE] =     GRect(16,  0, 16, 16);
+  icon_rects[ICON_RECT_STOP] =      GRect(32,  0, 16, 16);
+  icon_rects[ICON_RECT_DONE] =      GRect(16, 16, 16, 16);
+  icon_rects[ICON_RECT_TIMER] =     GRect( 0, 16,  8, 16);
+  icon_rects[ICON_RECT_STOPWATCH] = GRect( 8, 16,  8, 16);
+  icon_rects[ICON_RECT_ADD] =       GRect(48, 16, 16, 16);
+
+  s_window = window_create();
+  window_set_window_handlers(s_window, (WindowHandlers) {
     .load = window_load,
     .unload = window_unload
   });
@@ -44,20 +58,20 @@ void win_main_init(void) {
 }
 
 void win_main_show(void) {
-  window_stack_push(window, false);
+  window_stack_push(s_window, false);
 }
 
 static void window_load(Window* window) {
-  menu = menu_layer_create_fullscreen(window);
-  menu_layer_set_click_config_onto_window(menu, window);
-  menu_layer_set_callbacks(menu, NULL, (MenuLayerCallbacks) {
+  s_menu = menu_layer_create_fullscreen(s_window);
+  menu_layer_set_click_config_onto_window(s_menu, s_window);
+  menu_layer_set_callbacks(s_menu, NULL, (MenuLayerCallbacks) {
     .get_num_sections = menu_num_sections,
     .get_num_rows = menu_num_rows,
     .get_cell_height = menu_cell_height,
     .draw_row = menu_draw_row,
     .select_click = menu_select,
   });
-  menu_layer_add_to_window(menu, window);
+  menu_layer_add_to_window(s_menu, s_window);
 }
 
 static void window_unload(Window* window) {
@@ -113,7 +127,8 @@ static void menu_draw_row_timers(GContext* ctx, const Layer* cell_layer, uint16_
   Timer* timer = timers_get(row_index);
   if (! timer) { return; }
 
-  char time_left[12];
+
+  char* time_left = malloc(12);
   timer_time_str(timer, false, time_left, 12);
 
   graphics_context_set_text_color(ctx, GColorBlack);
@@ -124,53 +139,74 @@ static void menu_draw_row_timers(GContext* ctx, const Layer* cell_layer, uint16_
     GRect(33, -3, PEBBLE_WIDTH - 33, 28), GTextOverflowModeFill,
     GTextAlignmentLeft, NULL);
 
+  GBitmap* bmp_icon = NULL;
+  GBitmap* bmp_direction = NULL;
+
   switch (timer->status) {
     case TIMER_STATUS_STOPPED:
-      graphics_draw_bitmap_in_rect(ctx,
-        bitmaps_get_sub_bitmap(RESOURCE_ID_ICONS_16, ICON_RECT_STOP),
-        GRect(8, 8, 16, 16));
+      bmp_icon = bitmaps_get_sub_bitmap(RESOURCE_ID_ICONS_16, icon_rects[ICON_RECT_STOP]);
       break;
     case TIMER_STATUS_RUNNING:
-      graphics_draw_bitmap_in_rect(ctx,
-        bitmaps_get_sub_bitmap(RESOURCE_ID_ICONS_16, ICON_RECT_PLAY),
-        GRect(8, 8, 16, 16));
+      bmp_icon = bitmaps_get_sub_bitmap(RESOURCE_ID_ICONS_16, icon_rects[ICON_RECT_PLAY]);
       break;
     case TIMER_STATUS_PAUSED:
-      graphics_draw_bitmap_in_rect(ctx,
-        bitmaps_get_sub_bitmap(RESOURCE_ID_ICONS_16, ICON_RECT_PAUSE),
-        GRect(8, 8, 16, 16));
+      bmp_icon = bitmaps_get_sub_bitmap(RESOURCE_ID_ICONS_16, icon_rects[ICON_RECT_PAUSE]);
       break;
     case TIMER_STATUS_DONE:
-      graphics_draw_bitmap_in_rect(ctx,
-        bitmaps_get_sub_bitmap(RESOURCE_ID_ICONS_16, ICON_RECT_DONE),
-        GRect(8, 8, 16, 16));
+      bmp_icon = bitmaps_get_sub_bitmap(RESOURCE_ID_ICONS_16, icon_rects[ICON_RECT_DONE]);
       break;
+  }
+
+  if (bmp_icon) {
+    graphics_draw_bitmap_in_rect(ctx, bmp_icon, GRect(8, 8, 16, 16));
   }
 
   switch (timer->type) {
     case TIMER_TYPE_TIMER:
-      graphics_draw_bitmap_in_rect(ctx,
-        bitmaps_get_sub_bitmap(RESOURCE_ID_ICONS_16, ICON_RECT_TIMER),
-        GRect(PEBBLE_WIDTH - 8 - 8, 9, 8, 16));
+      bmp_direction = bitmaps_get_sub_bitmap(RESOURCE_ID_ICONS_16, icon_rects[ICON_RECT_TIMER]);
       break;
     case TIMER_TYPE_STOPWATCH:
-      graphics_draw_bitmap_in_rect(ctx,
-        bitmaps_get_sub_bitmap(RESOURCE_ID_ICONS_16, ICON_RECT_STOPWATCH),
-        GRect(PEBBLE_WIDTH - 8 - 8, 8, 8, 16));
+      bmp_direction = bitmaps_get_sub_bitmap(RESOURCE_ID_ICONS_16, icon_rects[ICON_RECT_STOPWATCH]);
+      break;
+  }
+
+  if (bmp_direction) {
+    graphics_draw_bitmap_in_rect(ctx, bmp_direction, GRect(PEBBLE_WIDTH - 8 - 8, 9, 8, 16));
   }
 
   if (timer->type == TIMER_TYPE_TIMER) {
     uint8_t width = (144 * timer->current_time) / timer->length;
     graphics_fill_rect(ctx, GRect(0, 31, width, 2), 0, GCornerNone);
   }
+
+  free(time_left);
 }
 
 static void menu_draw_row_other(GContext* ctx, const Layer* cell_layer, uint16_t row_index) {
+  graphics_context_set_text_color(ctx, GColorBlack);
+
+  GBitmap* bmp_icon = NULL;
+  char title[24];
+
   switch (row_index) {
-    case MENU_ROW_OTHER_ADD:
-      menu_cell_title_draw(ctx, cell_layer, "Add Timer");
+    case MENU_ROW_OTHER_ADD_TIMER:
+      bmp_icon = bitmaps_get_sub_bitmap(RESOURCE_ID_ICONS_16, icon_rects[ICON_RECT_ADD]);
+      snprintf(title, 24, "Add Timer");
+      break;
+    case MENU_ROW_OTHER_ADD_STOPWATCH:
+      bmp_icon = bitmaps_get_sub_bitmap(RESOURCE_ID_ICONS_16, icon_rects[ICON_RECT_ADD]);
+      snprintf(title, 24, "Add Stopwatch");
       break;
   }
+
+  if (bmp_icon) {
+    graphics_draw_bitmap_in_rect(ctx, bmp_icon, GRect(8, 10, 16, 16));
+  }
+
+  graphics_draw_text(ctx, title,
+    fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD),
+    GRect(33, 1, PEBBLE_WIDTH - 33, 24), GTextOverflowModeFill,
+    GTextAlignmentLeft, NULL);
 }
 
 static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* callback_context) {
@@ -189,9 +225,13 @@ static void menu_select_timers(uint16_t row_index) {
   if (! timer) { return; }
 
   switch (timer->status) {
-    case TIMER_STATUS_STOPPED:
+    case TIMER_STATUS_STOPPED: {
+      char strap_str[32];
+      snprintf(strap_str, 32, "/timer/%s/%d", "start", timer->id);
+      strap_log_action(strap_str);
       timer_start(timer);
       break;
+    }
     case TIMER_STATUS_RUNNING:
       timer_pause(timer);
       break;
@@ -206,12 +246,15 @@ static void menu_select_timers(uint16_t row_index) {
 
 static void menu_select_other(uint16_t row_index) {
   switch (row_index) {
-    case MENU_ROW_OTHER_ADD:
+    case MENU_ROW_OTHER_ADD_TIMER:
       win_timer_add_show();
+    break;
+    case MENU_ROW_OTHER_ADD_STOPWATCH:
+      // win_stopwatch_add_show();
     break;
   }
 }
 
 static void timers_update_handler(void) {
-  menu_layer_reload_data(menu);
+  menu_layer_reload_data(s_menu);
 }

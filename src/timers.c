@@ -1,6 +1,6 @@
 #include <pebble.h>
 #include <linked-list.h>
-#include <pebble-assist.h>
+// #include <pebble-assist.h>
 #include "timer.h"
 #include "timers.h"
 
@@ -59,7 +59,6 @@ void timers_mark_updated(void) {
     TimersUpdatedHandler handler = linked_list_get(update_handlers, h);
     handler();
   }
-  DEBUG("Heap Available: %d", heap_bytes_free());
 }
 
 void timers_register_update_handler(TimersUpdatedHandler handler) {

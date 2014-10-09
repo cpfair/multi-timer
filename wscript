@@ -66,6 +66,7 @@ def build(ctx):
   ctx.load('pebble_sdk')
 
   js_libs = [
+    '../src/js/src/libs/strap.js',
   ]
 
   js_sources = [
