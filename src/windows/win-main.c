@@ -13,14 +13,13 @@
 #define MENU_ROW_OTHER_ADD_TIMER     0
 #define MENU_ROW_OTHER_ADD_STOPWATCH 1
 
-GRect icon_rects[7];
-#define ICON_RECT_PLAY      0
-#define ICON_RECT_PAUSE     1
-#define ICON_RECT_STOP      2
-#define ICON_RECT_DONE      3
-#define ICON_RECT_TIMER     4
-#define ICON_RECT_STOPWATCH 5
-#define ICON_RECT_ADD       6
+#define ICON_RECT_PLAY      GRect( 0,  0, 16, 16)
+#define ICON_RECT_PAUSE     GRect(16,  0, 16, 16)
+#define ICON_RECT_STOP      GRect(32,  0, 16, 16)
+#define ICON_RECT_DONE      GRect(16, 16, 16, 16)
+#define ICON_RECT_TIMER     GRect( 0, 16,  8, 16)
+#define ICON_RECT_STOPWATCH GRect( 8, 16,  8, 16)
+#define ICON_RECT_ADD       GRect(48, 16, 16, 16)
 
 static void window_load(Window* window);
 static void window_unload(Window* window);
@@ -40,14 +39,6 @@ static Window*    s_window;
 static MenuLayer* s_menu;
 
 void win_main_init(void) {
-  icon_rects[ICON_RECT_PLAY] =      GRect( 0,  0, 16, 16);
-  icon_rects[ICON_RECT_PAUSE] =     GRect(16,  0, 16, 16);
-  icon_rects[ICON_RECT_STOP] =      GRect(32,  0, 16, 16);
-  icon_rects[ICON_RECT_DONE] =      GRect(16, 16, 16, 16);
-  icon_rects[ICON_RECT_TIMER] =     GRect( 0, 16,  8, 16);
-  icon_rects[ICON_RECT_STOPWATCH] = GRect( 8, 16,  8, 16);
-  icon_rects[ICON_RECT_ADD] =       GRect(48, 16, 16, 16);
-
   s_window = window_create();
   window_set_window_handlers(s_window, (WindowHandlers) {
     .load = window_load,
@@ -113,6 +104,7 @@ static int16_t menu_cell_height(struct MenuLayer *menu, MenuIndex *cell_index, v
 }
 
 static void menu_draw_row(GContext* ctx, const Layer* cell_layer, MenuIndex* cell_index, void* callback_context) {
+  DEBUG("Heap remaining: %d", heap_bytes_free());
   switch (cell_index->section) {
     case MENU_SECTION_TIMERS:
       menu_draw_row_timers(ctx, cell_layer, cell_index->row);
@@ -144,16 +136,16 @@ static void menu_draw_row_timers(GContext* ctx, const Layer* cell_layer, uint16_
 
   switch (timer->status) {
     case TIMER_STATUS_STOPPED:
-      bmp_icon = bitmaps_get_sub_bitmap(RESOURCE_ID_ICONS_16, icon_rects[ICON_RECT_STOP]);
+      bmp_icon = bitmaps_get_sub_bitmap(RESOURCE_ID_ICONS_16, ICON_RECT_STOP);
       break;
     case TIMER_STATUS_RUNNING:
-      bmp_icon = bitmaps_get_sub_bitmap(RESOURCE_ID_ICONS_16, icon_rects[ICON_RECT_PLAY]);
+      bmp_icon = bitmaps_get_sub_bitmap(RESOURCE_ID_ICONS_16, ICON_RECT_PLAY);
       break;
     case TIMER_STATUS_PAUSED:
-      bmp_icon = bitmaps_get_sub_bitmap(RESOURCE_ID_ICONS_16, icon_rects[ICON_RECT_PAUSE]);
+      bmp_icon = bitmaps_get_sub_bitmap(RESOURCE_ID_ICONS_16, ICON_RECT_PAUSE);
       break;
     case TIMER_STATUS_DONE:
-      bmp_icon = bitmaps_get_sub_bitmap(RESOURCE_ID_ICONS_16, icon_rects[ICON_RECT_DONE]);
+      bmp_icon = bitmaps_get_sub_bitmap(RESOURCE_ID_ICONS_16, ICON_RECT_DONE);
       break;
   }
 
@@ -163,10 +155,10 @@ static void menu_draw_row_timers(GContext* ctx, const Layer* cell_layer, uint16_
 
   switch (timer->type) {
     case TIMER_TYPE_TIMER:
-      bmp_direction = bitmaps_get_sub_bitmap(RESOURCE_ID_ICONS_16, icon_rects[ICON_RECT_TIMER]);
+      bmp_direction = bitmaps_get_sub_bitmap(RESOURCE_ID_ICONS_16, ICON_RECT_TIMER);
       break;
     case TIMER_TYPE_STOPWATCH:
-      bmp_direction = bitmaps_get_sub_bitmap(RESOURCE_ID_ICONS_16, icon_rects[ICON_RECT_STOPWATCH]);
+      bmp_direction = bitmaps_get_sub_bitmap(RESOURCE_ID_ICONS_16, ICON_RECT_STOPWATCH);
       break;
   }
 
@@ -190,11 +182,11 @@ static void menu_draw_row_other(GContext* ctx, const Layer* cell_layer, uint16_t
 
   switch (row_index) {
     case MENU_ROW_OTHER_ADD_TIMER:
-      bmp_icon = bitmaps_get_sub_bitmap(RESOURCE_ID_ICONS_16, icon_rects[ICON_RECT_ADD]);
+      bmp_icon = bitmaps_get_sub_bitmap(RESOURCE_ID_ICONS_16, ICON_RECT_ADD);
       snprintf(title, 24, "Add Timer");
       break;
     case MENU_ROW_OTHER_ADD_STOPWATCH:
-      bmp_icon = bitmaps_get_sub_bitmap(RESOURCE_ID_ICONS_16, icon_rects[ICON_RECT_ADD]);
+      bmp_icon = bitmaps_get_sub_bitmap(RESOURCE_ID_ICONS_16, ICON_RECT_ADD);
       snprintf(title, 24, "Add Stopwatch");
       break;
   }
@@ -223,6 +215,8 @@ static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* cal
 static void menu_select_timers(uint16_t row_index) {
   Timer* timer = timers_get(row_index);
   if (! timer) { return; }
+
+  DEBUG("Selecting action for timer %d", timer->id);
 
   switch (timer->status) {
     case TIMER_STATUS_STOPPED: {

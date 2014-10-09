@@ -46,7 +46,7 @@ static void create_fake_timers(void) {
   Timer* stopwatch = malloc(sizeof(Timer));
   stopwatch->id = 2;
   stopwatch->type = TIMER_TYPE_STOPWATCH;
-  stopwatch->status = TIMER_STATUS_STOPPED;
+  stopwatch->status = TIMER_STATUS_PAUSED;
   stopwatch->current_time = 0;
   timers_add(stopwatch);
 }
