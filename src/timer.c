@@ -320,6 +320,8 @@ static void timer_completed_action(Timer* timer) {
   }
   if (timer->repeat == TIMER_REPEAT_INFINITE) {
     timer_start(timer);
+  } else if (timer->repeat == TIMER_REPEAT_CASCADE) {
+    timer_start(timers_get((timers_index_of(timer->id) + 1) % timers_count()));
   }
   timers_highlight(timer);
 }

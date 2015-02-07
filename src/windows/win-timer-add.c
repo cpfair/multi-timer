@@ -172,7 +172,7 @@ static void menu_draw_row_main(GContext* ctx, uint16_t row) {
       menu_draw_option(ctx, "Vibration", tmp);
       break;
     case MENU_ROW_REPEAT:
-      menu_draw_option(ctx, "Repeat", (s_timer->repeat == TIMER_REPEAT_INFINITE) ? "ON" : "OFF");
+      menu_draw_option(ctx, "Repeat", (s_timer->repeat == TIMER_REPEAT_INFINITE) ? "ON" : (s_timer->repeat == TIMER_REPEAT_CASCADE ? "CASCADE" : "OFF"));
       break;
   }
 }
@@ -198,9 +198,11 @@ static void menu_select_main(uint16_t row) {
     break;
     case MENU_ROW_REPEAT:
       if (s_timer->repeat == TIMER_REPEAT_INFINITE) {
-        s_timer->repeat = 0;
+        s_timer->repeat = TIMER_REPEAT_CASCADE;
       }
-      else {
+      else if (s_timer->repeat == TIMER_REPEAT_CASCADE) {
+        s_timer->repeat = 0;
+      } else {
         s_timer->repeat = TIMER_REPEAT_INFINITE;
       }
       menu_layer_reload_data(s_menu);

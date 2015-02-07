@@ -69,6 +69,7 @@ typedef struct Timer {
 } Timer;
 
 #define TIMER_REPEAT_INFINITE 100
+#define TIMER_REPEAT_CASCADE 200
 
 void timer_time_str(uint32_t timer_time, bool showHours, char* str, int str_len);
 void timer_start(Timer* timer);
